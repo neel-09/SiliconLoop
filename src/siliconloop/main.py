@@ -10,12 +10,12 @@ import threading
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import pipeline, report, simspec
+from . import budget, llm, pipeline, report, simspec
 from .allocator import BOARDS, PARTS, AllocationError
 
 app = FastAPI(title="SiliconLoop", description="Photo of parts + a sentence -> proven Arduino firmware. Built with Muse Spark Open.")
@@ -51,9 +51,15 @@ def _public(build):
     return {k: v for k, v in build.items() if k not in HIDDEN} | {"has_hex": bool(build.get("hex"))}
 
 
+def _guard(request, kind):
+    budget.check(request, kind, llm.total_spent())
+
+
 def _run(fn, *args):
     try:
         return _public(fn(*args))
+    except budget.BudgetExceeded as e:
+        raise HTTPException(503, str(e))
     except pipeline.PipelineError as e:
         raise HTTPException(400, str(e))
     except AllocationError as e:
@@ -65,6 +71,12 @@ def _run(fn, *args):
 @app.get("/api/health")
 def health():
     return {"ok": True}
+
+
+@app.get("/api/budget")
+def budget_status():
+    """AI spend so far, the paced allowance and the hard cap for the judging window."""
+    return budget.status(llm.total_spent())
 
 
 @app.get("/api/boards")
@@ -83,6 +95,7 @@ def supported_parts():
 
 @app.post("/api/builds")
 def create_build(
+    request: Request,
     board: str = Form(..., examples=["uno"]),
     photo1: UploadFile = File(..., description="Photo of your components"),
     photo2: UploadFile | None = File(None, description="Optional second photo"),
@@ -100,19 +113,22 @@ def create_build(
         if not (f.content_type or "").startswith("image/"):
             raise HTTPException(415, f"{f.filename} is not an image.")
         images.append((data, f.content_type))
+    _guard(request, "recognise")
     return _run(pipeline.recognise, board, images)
 
 
 @app.post("/api/builds/{build_id}/design")
-def design(build_id: str, req: DesignRequest):
+def design(build_id: str, req: DesignRequest, request: Request):
     """Step 2: confirmed parts + wish -> grounded plan, behaviour rules, wiring and safety result."""
+    _guard(request, "build")
     return _run(pipeline.design, build_id, [p.model_dump() for p in req.parts], req.wish)
 
 
 @app.post("/api/builds/{build_id}/firmware")
-def firmware(build_id: str):
+def firmware(build_id: str, request: Request):
     """Step 3: Spark Open writes the complete sketch; lint, compile, run the simulation test and repair up to 3 times.
     Status becomes "verified" only when every behaviour rule and health check passes; only then is the hex served."""
+    _guard(request, "build")
     return _run(pipeline.firmware, build_id)
 
 
@@ -122,10 +138,13 @@ def get_build(build_id: str):
 
 
 @app.post("/api/builds/{build_id}/ideas")
-def ideas(build_id: str, req: IdeasRequest):
+def ideas(build_id: str, req: IdeasRequest, request: Request):
     """Three gadget ideas Muse Spark Open proposes for the confirmed parts, each pre-checked by the pin allocator."""
+    _guard(request, "ideas")
     try:
         return {"ideas": pipeline.ideas(build_id, [p.model_dump() for p in req.parts])}
+    except budget.BudgetExceeded as e:
+        raise HTTPException(503, str(e))
     except pipeline.PipelineError as e:
         raise HTTPException(400, str(e))
     except ValueError as e:
@@ -133,11 +152,13 @@ def ideas(build_id: str, req: IdeasRequest):
 
 
 @app.post("/api/builds/{build_id}/run")
-def run(build_id: str, req: DesignRequest):
+def run(build_id: str, req: DesignRequest, request: Request):
     """Steps 2 and 3 in one go, streamed as Server-Sent Events for the live execution trace.
     Each event is a JSON object: {"event": "stage", "stage", "state", "text", "t", ...data}, then one
     {"event": "done", "build": {...}} or {"event": "error", "message"}."""
     _load_or_404(build_id)
+    _guard(request, "build")
+    budget.take_build_slot()
     q, t0 = queue.Queue(), time.monotonic()
 
     def emit(stage, state, text, **data):
@@ -154,6 +175,7 @@ def run(build_id: str, req: DesignRequest):
         except Exception as e:  # never leave the client waiting on a dead stream
             q.put({"event": "error", "message": f"Internal error: {type(e).__name__}: {e}"})
         finally:
+            budget.release_build_slot()
             q.put(None)
 
     threading.Thread(target=work, daemon=True).start()
@@ -201,10 +223,13 @@ def report_md(build_id: str):
 
 
 @app.post("/api/builds/{build_id}/chat")
-def chat(build_id: str, req: ChatRequest):
+def chat(build_id: str, req: ChatRequest, request: Request):
     """Ask Muse Spark Open a basic question about this build (grounded in its report, rules and sketch)."""
+    _guard(request, "chat")
     try:
         return {"reply": pipeline.chat(build_id, [m.model_dump() for m in req.messages])}
+    except budget.BudgetExceeded as e:
+        raise HTTPException(503, str(e))
     except pipeline.PipelineError as e:
         raise HTTPException(400, str(e))
 

@@ -202,6 +202,17 @@ gcloud run deploy siliconloop --source . --allow-unauthenticated \
   --add-volume-mount volume=data,mount-path=/data \
   --set-secrets baseten_api_key=baseten_api_key:latest,tavily_api_key=tavily_api_key:latest
 ```
+Add `--set-env-vars BUDGET_SPENT_BEFORE=2.72` (spend from local development, not in the bucket's cost log).
+
+### Spending guard (`src/siliconloop/budget.py`)
+Every route that calls Muse Spark Open is checked first:
+- **Hard cap:** total spend never exceeds `BUDGET_USD` (default $70); model calls stop $0.50 below it.
+- **Pacing:** $8 is available immediately; the rest is released evenly from Nov 4 01:30 to Nov 9 23:00 IST
+  (about $0.42/hour), so unused budget carries forward and the cap cannot be reached early.
+- **Per visitor (IP):** 6 builds/hour and 20/day, 20 photo uploads/hour, 10 idea requests/hour,
+  30 assistant messages/hour; at most 3 builds run at once.
+- `GET /api/budget` shows spend, the current allowance and the pace.
+
 The cost log is written to `gs://YOUR_BUCKET/costs.jsonl` and survives restarts and redeploys
 (`gcloud storage cat gs://YOUR_BUCKET/costs.jsonl`). `--max-instances 1` keeps a single writer on the cost log.
 

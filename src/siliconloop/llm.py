@@ -4,6 +4,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 
+from . import budget
+
 load_dotenv()
 
 SPARK_MODEL = "meta-models/muse-spark-open-1026"
@@ -29,10 +31,26 @@ def _log(job, model, resp, seconds):
         "usd": round(tin * p_in / 1e6 + tout * p_out / 1e6, 6),
         "sec": round(seconds, 2),}
     COST_LOG.parent.mkdir(parents=True, exist_ok=True)
+    global _total
     with _lock:
-        row["total_usd"] = round(_last_total() + row["usd"], 6)  # running total of all spend so far
+        if _total is None:
+            _total = _last_total()
+        _total = round(_total + row["usd"], 6)
+        row["total_usd"] = _total  # running total of all spend so far
         with COST_LOG.open("a", encoding="utf-8") as f:
             f.write(json.dumps(row) + "\n")
+
+
+_total = None  # cached running total, so the budget guard does not re-read the log on every request
+
+
+def total_spent():
+    """USD spent so far according to COST_LOG."""
+    global _total
+    with _lock:
+        if _total is None:
+            _total = _last_total()
+        return _total
 
 
 def _last_total():
@@ -50,6 +68,7 @@ def _last_total():
 def chat(job, model, messages, **kw):
     """Every model call goes through here so it is logged to COST_LOG."""
     kw.setdefault("reasoning_effort", os.getenv("SPARK_REASONING", "low"))  # model default is xhigh: slow and costly
+    budget.hard_stop(total_spent())  # never call the model once the budget cap is reached
     t = time.monotonic()
     resp = spark.chat.completions.create(model=model, messages=messages, **kw)
     _log(job, model, resp, time.monotonic() - t)
