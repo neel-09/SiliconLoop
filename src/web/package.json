@@ -1,0 +1,25 @@
+{
+  "name": "siliconloop-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "start": "concurrently -k -n web,api -c yellow,cyan \"vite build --watch\" \"cd ../.. && uv run uvicorn siliconloop.main:app --reload --reload-dir src/siliconloop\"",
+    "start:lan": "concurrently -k -n web,api -c yellow,cyan \"vite build --watch\" \"cd ../.. && uv run uvicorn siliconloop.main:app --reload --reload-dir src/siliconloop --host 0.0.0.0\""
+  },
+  "dependencies": {
+    "@fontsource/chakra-petch": "^5.1.0",
+    "@fontsource/ibm-plex-mono": "^5.1.0",
+    "@fontsource/ibm-plex-sans": "^5.1.0",
+    "@wokwi/elements": "^1.9.2",
+    "avr8js": "0.21.1",
+    "dompurify": "^3.2.0",
+    "marked": "^15.0.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.5",
+    "vite": "^6.0.0"
+  }
+}

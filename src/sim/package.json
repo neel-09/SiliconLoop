@@ -1,0 +1,9 @@
+{
+  "name": "siliconloop-sim",
+  "version": "1.0.0",
+  "dependencies": {
+    "avr8js": "0.21.1"
+  },
+  "type": "module",
+  "private": true
+}

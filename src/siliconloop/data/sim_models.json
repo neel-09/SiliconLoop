@@ -1,0 +1,66 @@
+{
+  "_doc": "Reusable simulation model types (implemented in src/sim/parts.js). A part card's 'sim' is a list of model instances: {model, pins: {terminal: card pin key | {role: <pin role>}}, params, io: {rule key: native key | {key, requires_option}}}. Rule keys are what behaviour rules set/check; their direction, type and default come from the model's native keys. Terminals marked optional may be left unwired. A new part that behaves like an existing type needs only a card in parts.json; a new type needs code in parts.js and an entry here.",
+  "load": {
+    "doc": "Anything one output pin drives: LED, buzzer, relay, laser, vibration motor module. 'state' is true while the pin spends more than 'threshold' of its time at the active level; 'level' is that fraction (PWM duty). An undriven (input) pin counts as inactive.",
+    "terminals": {"out": {}},
+    "native": {"state": {"dir": "out", "type": "bool"}, "level": {"dir": "out", "type": "fraction"}},
+    "params": {"active_level": "HIGH", "threshold": 0.05}
+  },
+  "contact": {
+    "doc": "A passive switch between the pin and GND (push button, tilt switch, reed switch, joystick click). Closed reads LOW; open reads HIGH only if the firmware enabled the pull-up, otherwise the floating pin reads LOW, so a missing INPUT_PULLUP fails the test.",
+    "terminals": {"contact": {}},
+    "native": {"closed": {"dir": "in", "type": "bool", "default": false}},
+    "params": {}
+  },
+  "driven_digital": {
+    "doc": "A module that drives its own HIGH/LOW output (PIR, IR obstacle, touch, flame). Optional 'analog' terminal: the module's analog output, at analog_active / analog_idle ADC counts.",
+    "terminals": {"out": {}, "analog": {"optional": true}},
+    "native": {"active": {"dir": "in", "type": "bool", "default": false}},
+    "params": {"active_level": "HIGH", "analog_active": 200, "analog_idle": 900}
+  },
+  "analog_source": {
+    "doc": "A 0-5 V signal (potentiometer, LDR divider, sound/soil/gas sensor analog output). Optional 'digital' terminal: an on-board comparator output that is at digital_active_level while the reading is above (or below) digital_threshold.",
+    "terminals": {"out": {}, "digital": {"optional": true}},
+    "native": {"value": {"dir": "in", "type": "adc", "default": 512}},
+    "params": {"digital_threshold": 512, "digital_when": "above", "digital_active_level": "HIGH"}
+  },
+  "servo_pulse": {
+    "doc": "Hobby servo: reads the 50 Hz pulse (min_us..max_us = 0..max_angle) and turns at deg_per_s; holds position when pulses stop.",
+    "terminals": {"signal": {}},
+    "native": {"angle": {"dir": "out", "type": "angle"}},
+    "params": {"min_us": 544, "max_us": 2400, "max_angle": 180, "deg_per_s": 600, "start_angle": 90}
+  },
+  "ultrasonic": {
+    "doc": "Trigger/echo ranger (HC-SR04 style): after a trigger pulse of at least min_trigger_us, echo goes high delay_us later for distance * us_per_cm; beyond max_cm it returns a no_echo_us pulse.",
+    "terminals": {"trig": {}, "echo": {}},
+    "native": {"distance": {"dir": "in", "type": "distance", "default": 200}},
+    "params": {"us_per_cm": 58.3, "max_cm": 400, "no_echo_us": 38000, "delay_us": 450, "min_trigger_us": 8}
+  },
+  "dht": {
+    "doc": "DHT-family single-wire temperature/humidity sensor. encoding 'int' (DHT11: whole-number bytes) or 'tenths' (DHT22/AM2302: 16-bit tenths, sign bit). Responds after the line is held low for at least start_low_us.",
+    "terminals": {"data": {}},
+    "native": {"temperature": {"dir": "in", "type": "temp", "default": 25}, "humidity": {"dir": "in", "type": "pct", "default": 50}},
+    "params": {"encoding": "tenths", "start_low_us": 800, "temp_range": [-40, 80], "humidity_range": [0, 100]}
+  },
+  "imu_mpu6050": {
+    "doc": "MPU6050-compatible I2C IMU register map. Attitude moves to the set pitch/roll at deg_per_s; accelerometer reports gravity, gyro reports the rotation rate. roll = rotation about X, pitch = about Y.",
+    "terminals": {},
+    "native": {"pitch": {"dir": "in", "type": "tilt", "default": 0}, "roll": {"dir": "in", "type": "tilt", "default": 0}},
+    "params": {"address": "0x68", "who_am_i": "0x68", "deg_per_s": 200}
+  },
+  "ssd1306": {
+    "doc": "SSD1306-compatible I2C OLED. Decodes commands into display RAM and reads text back in 5x7 fonts (1x and 2x). Text counts only while the display and charge pump are on.",
+    "terminals": {},
+    "native": {"text": {"dir": "out", "type": "str"}},
+    "params": {"address": "0x3C", "width": 128, "height": 64}
+  },
+  "hd44780_i2c": {
+    "doc": "HD44780 character LCD behind a PCF8574 I2C backpack, 4-bit mode. bits: which expander bit is RS/RW/EN/backlight/D4 (D4-D7 consecutive).",
+    "terminals": {},
+    "native": {"text": {"dir": "out", "type": "str"}},
+    "params": {"address": "0x27", "cols": 16, "rows": 2, "row_offsets": [0, 64, 20, 84], "bits": {"rs": 0, "rw": 1, "en": 2, "bl": 3, "d4": 4}}
+  },
+  "_board": {
+    "native": {"serial_contains": {"dir": "out", "type": "str"}, "serial_excludes": {"dir": "out", "type": "str"}, "telemetry": {"dir": "out", "type": "telemetry"}}
+  }
+}

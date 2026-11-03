@@ -1,0 +1,772 @@
+{
+ "_doc": "Board facts for the pin allocator and safety check. Pin order is allocation preference. Capabilities: digital, pwm, analog, interrupt, i2c_sda, i2c_scl. Verified 2026-11-01 against the sources listed on each board; values under limits_notes marked 'SiliconLoop estimate' are design margins, not published specs.",
+ "uno": {
+  "name": "Arduino Uno",
+  "fqbn": "arduino:avr:uno",
+  "upload_baud": 115200,
+  "flash_bytes": 32256,
+  "pins": {
+   "D0": [
+    "digital"
+   ],
+   "D1": [
+    "digital"
+   ],
+   "D2": [
+    "digital",
+    "interrupt"
+   ],
+   "D3": [
+    "digital",
+    "pwm",
+    "interrupt"
+   ],
+   "D4": [
+    "digital"
+   ],
+   "D5": [
+    "digital",
+    "pwm"
+   ],
+   "D6": [
+    "digital",
+    "pwm"
+   ],
+   "D7": [
+    "digital"
+   ],
+   "D8": [
+    "digital"
+   ],
+   "D9": [
+    "digital",
+    "pwm"
+   ],
+   "D10": [
+    "digital",
+    "pwm"
+   ],
+   "D11": [
+    "digital",
+    "pwm"
+   ],
+   "D12": [
+    "digital"
+   ],
+   "D13": [
+    "digital"
+   ],
+   "A0": [
+    "digital",
+    "analog"
+   ],
+   "A1": [
+    "digital",
+    "analog"
+   ],
+   "A2": [
+    "digital",
+    "analog"
+   ],
+   "A3": [
+    "digital",
+    "analog"
+   ],
+   "A4": [
+    "digital",
+    "analog",
+    "i2c_sda"
+   ],
+   "A5": [
+    "digital",
+    "analog",
+    "i2c_scl"
+   ]
+  },
+  "mcu": "atmega328p",
+  "logic_v": 5.0,
+  "supply_rails": {
+   "5V": 5.0,
+   "3V3": 3.3
+  },
+  "reserved": {
+   "D0": "USB serial RX",
+   "D1": "USB serial TX"
+  },
+  "avoid_for_input": {
+   "D13": "on-board LED loads the pin, so pull-ups read unreliably"
+  },
+  "conflicts": [
+   {
+    "when_library": "Servo",
+    "disables_pwm": [
+     "D9",
+     "D10"
+    ],
+    "reason": "Servo library takes Timer1"
+   },
+   {
+    "when_library": "tone",
+    "disables_pwm": [
+     "D3",
+     "D11"
+    ],
+    "reason": "tone() takes Timer2"
+   }
+  ],
+  "limits": {
+   "gpio_ma_recommended": 20,
+   "gpio_ma_absolute": 40,
+   "mcu_total_ma": 200,
+   "usb_5v_ma": 400,
+   "board_self_ma": 50,
+   "rail_3v3_ma": 50,
+   "usb_peak_ma": 1000
+  },
+  "sram_bytes": 2048,
+  "upload_protocol": "stk500v1",
+  "limits_notes": {
+   "gpio_ma_absolute": "ATmega datasheet absolute maximum, DC current per I/O pin (40 mA)",
+   "gpio_ma_recommended": "ATmega datasheet test condition (20 mA at VCC = 5 V); used as the safe per-pin limit",
+   "mcu_total_ma": "ATmega datasheet absolute maximum per VCC/GND pin (200 mA); applied to the whole chip, which is conservative on the Mega (4 VCC pins)",
+   "usb_5v_ma": "SiliconLoop limit: 400 mA, below the 500 mA USB 2.0 rating, because board fuses, cables and laptop ports often deliver less (one source puts usable USB current on an Uno at ~400 mA)",
+   "board_self_ma": "SiliconLoop estimate: the board's own draw (MCU, USB-serial chip, power LED)",
+   "rail_3v3_ma": "SiliconLoop estimate: on-board 3.3 V regulator capacity",
+   "usb_peak_ma": "SiliconLoop limit for brief worst-case peaks (servo stall/start-up): the board's 500 mA resettable USB fuse trips at roughly 1 A"
+  },
+  "sources": [
+   "https://www.arduino.cc/en/uploads/Main/boards.txt",
+   "https://github.com/arduino/ArduinoCore-avr/blob/master/boards.txt",
+   "https://www.arduino.cc/en/Reference/Servo",
+   "https://www.arduino.cc/playground/Code/MegaServo/",
+   "https://docs.arduino.cc/language-reference/en/functions/advanced-io/tone/",
+   "https://www.arduino.cc/playground/Main/ArduinoPinCurrentLimitations/",
+   "ATmega328P / ATmega2560 datasheets, Absolute Maximum Ratings"
+  ]
+ },
+ "nano": {
+  "name": "Arduino Nano",
+  "fqbn": "arduino:avr:nano:cpu=atmega328",
+  "upload_baud": 115200,
+  "flash_bytes": 30720,
+  "pins": {
+   "D0": [
+    "digital"
+   ],
+   "D1": [
+    "digital"
+   ],
+   "D2": [
+    "digital",
+    "interrupt"
+   ],
+   "D3": [
+    "digital",
+    "pwm",
+    "interrupt"
+   ],
+   "D4": [
+    "digital"
+   ],
+   "D5": [
+    "digital",
+    "pwm"
+   ],
+   "D6": [
+    "digital",
+    "pwm"
+   ],
+   "D7": [
+    "digital"
+   ],
+   "D8": [
+    "digital"
+   ],
+   "D9": [
+    "digital",
+    "pwm"
+   ],
+   "D10": [
+    "digital",
+    "pwm"
+   ],
+   "D11": [
+    "digital",
+    "pwm"
+   ],
+   "D12": [
+    "digital"
+   ],
+   "D13": [
+    "digital"
+   ],
+   "A0": [
+    "digital",
+    "analog"
+   ],
+   "A1": [
+    "digital",
+    "analog"
+   ],
+   "A2": [
+    "digital",
+    "analog"
+   ],
+   "A3": [
+    "digital",
+    "analog"
+   ],
+   "A4": [
+    "digital",
+    "analog",
+    "i2c_sda"
+   ],
+   "A5": [
+    "digital",
+    "analog",
+    "i2c_scl"
+   ],
+   "A6": [
+    "analog"
+   ],
+   "A7": [
+    "analog"
+   ]
+  },
+  "mcu": "atmega328p",
+  "logic_v": 5.0,
+  "supply_rails": {
+   "5V": 5.0,
+   "3V3": 3.3
+  },
+  "reserved": {
+   "D0": "USB serial RX",
+   "D1": "USB serial TX"
+  },
+  "avoid_for_input": {
+   "D13": "on-board LED loads the pin, so pull-ups read unreliably"
+  },
+  "conflicts": [
+   {
+    "when_library": "Servo",
+    "disables_pwm": [
+     "D9",
+     "D10"
+    ],
+    "reason": "Servo library takes Timer1"
+   },
+   {
+    "when_library": "tone",
+    "disables_pwm": [
+     "D3",
+     "D11"
+    ],
+    "reason": "tone() takes Timer2"
+   }
+  ],
+  "limits": {
+   "gpio_ma_recommended": 20,
+   "gpio_ma_absolute": 40,
+   "mcu_total_ma": 200,
+   "usb_5v_ma": 400,
+   "board_self_ma": 50,
+   "rail_3v3_ma": 50,
+   "usb_peak_ma": 1000
+  },
+  "sram_bytes": 2048,
+  "upload_protocol": "stk500v1",
+  "limits_notes": {
+   "gpio_ma_absolute": "ATmega datasheet absolute maximum, DC current per I/O pin (40 mA)",
+   "gpio_ma_recommended": "ATmega datasheet test condition (20 mA at VCC = 5 V); used as the safe per-pin limit",
+   "mcu_total_ma": "ATmega datasheet absolute maximum per VCC/GND pin (200 mA); applied to the whole chip, which is conservative on the Mega (4 VCC pins)",
+   "usb_5v_ma": "SiliconLoop limit: 400 mA, below the 500 mA USB 2.0 rating, because board fuses, cables and laptop ports often deliver less (one source puts usable USB current on an Uno at ~400 mA)",
+   "board_self_ma": "SiliconLoop estimate: the board's own draw (MCU, USB-serial chip, power LED)",
+   "rail_3v3_ma": "SiliconLoop estimate: on-board 3.3 V regulator capacity",
+   "usb_peak_ma": "SiliconLoop limit for brief worst-case peaks (servo stall/start-up): the board's 500 mA resettable USB fuse trips at roughly 1 A"
+  },
+  "sources": [
+   "https://www.arduino.cc/en/uploads/Main/boards.txt",
+   "https://github.com/arduino/ArduinoCore-avr/blob/master/boards.txt",
+   "https://www.arduino.cc/en/Reference/Servo",
+   "https://www.arduino.cc/playground/Code/MegaServo/",
+   "https://docs.arduino.cc/language-reference/en/functions/advanced-io/tone/",
+   "https://www.arduino.cc/playground/Main/ArduinoPinCurrentLimitations/",
+   "ATmega328P / ATmega2560 datasheets, Absolute Maximum Ratings",
+   "https://docs.mobiflight.com/boards/recommended/arduino-nano/ (A6/A7 analog-only)"
+  ]
+ },
+ "nano_old": {
+  "name": "Arduino Nano (old bootloader)",
+  "fqbn": "arduino:avr:nano:cpu=atmega328old",
+  "upload_baud": 57600,
+  "flash_bytes": 30720,
+  "pins": {
+   "D0": [
+    "digital"
+   ],
+   "D1": [
+    "digital"
+   ],
+   "D2": [
+    "digital",
+    "interrupt"
+   ],
+   "D3": [
+    "digital",
+    "pwm",
+    "interrupt"
+   ],
+   "D4": [
+    "digital"
+   ],
+   "D5": [
+    "digital",
+    "pwm"
+   ],
+   "D6": [
+    "digital",
+    "pwm"
+   ],
+   "D7": [
+    "digital"
+   ],
+   "D8": [
+    "digital"
+   ],
+   "D9": [
+    "digital",
+    "pwm"
+   ],
+   "D10": [
+    "digital",
+    "pwm"
+   ],
+   "D11": [
+    "digital",
+    "pwm"
+   ],
+   "D12": [
+    "digital"
+   ],
+   "D13": [
+    "digital"
+   ],
+   "A0": [
+    "digital",
+    "analog"
+   ],
+   "A1": [
+    "digital",
+    "analog"
+   ],
+   "A2": [
+    "digital",
+    "analog"
+   ],
+   "A3": [
+    "digital",
+    "analog"
+   ],
+   "A4": [
+    "digital",
+    "analog",
+    "i2c_sda"
+   ],
+   "A5": [
+    "digital",
+    "analog",
+    "i2c_scl"
+   ],
+   "A6": [
+    "analog"
+   ],
+   "A7": [
+    "analog"
+   ]
+  },
+  "mcu": "atmega328p",
+  "logic_v": 5.0,
+  "supply_rails": {
+   "5V": 5.0,
+   "3V3": 3.3
+  },
+  "reserved": {
+   "D0": "USB serial RX",
+   "D1": "USB serial TX"
+  },
+  "avoid_for_input": {
+   "D13": "on-board LED loads the pin, so pull-ups read unreliably"
+  },
+  "conflicts": [
+   {
+    "when_library": "Servo",
+    "disables_pwm": [
+     "D9",
+     "D10"
+    ],
+    "reason": "Servo library takes Timer1"
+   },
+   {
+    "when_library": "tone",
+    "disables_pwm": [
+     "D3",
+     "D11"
+    ],
+    "reason": "tone() takes Timer2"
+   }
+  ],
+  "limits": {
+   "gpio_ma_recommended": 20,
+   "gpio_ma_absolute": 40,
+   "mcu_total_ma": 200,
+   "usb_5v_ma": 400,
+   "board_self_ma": 50,
+   "rail_3v3_ma": 50,
+   "usb_peak_ma": 1000
+  },
+  "sram_bytes": 2048,
+  "upload_protocol": "stk500v1",
+  "limits_notes": {
+   "gpio_ma_absolute": "ATmega datasheet absolute maximum, DC current per I/O pin (40 mA)",
+   "gpio_ma_recommended": "ATmega datasheet test condition (20 mA at VCC = 5 V); used as the safe per-pin limit",
+   "mcu_total_ma": "ATmega datasheet absolute maximum per VCC/GND pin (200 mA); applied to the whole chip, which is conservative on the Mega (4 VCC pins)",
+   "usb_5v_ma": "SiliconLoop limit: 400 mA, below the 500 mA USB 2.0 rating, because board fuses, cables and laptop ports often deliver less (one source puts usable USB current on an Uno at ~400 mA)",
+   "board_self_ma": "SiliconLoop estimate: the board's own draw (MCU, USB-serial chip, power LED)",
+   "rail_3v3_ma": "SiliconLoop estimate: on-board 3.3 V regulator capacity",
+   "usb_peak_ma": "SiliconLoop limit for brief worst-case peaks (servo stall/start-up): the board's 500 mA resettable USB fuse trips at roughly 1 A"
+  },
+  "sources": [
+   "https://www.arduino.cc/en/uploads/Main/boards.txt",
+   "https://github.com/arduino/ArduinoCore-avr/blob/master/boards.txt",
+   "https://www.arduino.cc/en/Reference/Servo",
+   "https://www.arduino.cc/playground/Code/MegaServo/",
+   "https://docs.arduino.cc/language-reference/en/functions/advanced-io/tone/",
+   "https://www.arduino.cc/playground/Main/ArduinoPinCurrentLimitations/",
+   "ATmega328P / ATmega2560 datasheets, Absolute Maximum Ratings",
+   "https://docs.mobiflight.com/boards/recommended/arduino-nano/ (A6/A7 analog-only)"
+  ]
+ },
+ "mega": {
+  "name": "Arduino Mega 2560",
+  "fqbn": "arduino:avr:mega:cpu=atmega2560",
+  "upload_baud": 115200,
+  "flash_bytes": 253952,
+  "pins": {
+   "D0": [
+    "digital"
+   ],
+   "D1": [
+    "digital"
+   ],
+   "D2": [
+    "digital",
+    "pwm",
+    "interrupt"
+   ],
+   "D3": [
+    "digital",
+    "pwm",
+    "interrupt"
+   ],
+   "D4": [
+    "digital",
+    "pwm"
+   ],
+   "D5": [
+    "digital",
+    "pwm"
+   ],
+   "D6": [
+    "digital",
+    "pwm"
+   ],
+   "D7": [
+    "digital",
+    "pwm"
+   ],
+   "D8": [
+    "digital",
+    "pwm"
+   ],
+   "D9": [
+    "digital",
+    "pwm"
+   ],
+   "D10": [
+    "digital",
+    "pwm"
+   ],
+   "D11": [
+    "digital",
+    "pwm"
+   ],
+   "D12": [
+    "digital",
+    "pwm"
+   ],
+   "D13": [
+    "digital",
+    "pwm"
+   ],
+   "D22": [
+    "digital"
+   ],
+   "D23": [
+    "digital"
+   ],
+   "D24": [
+    "digital"
+   ],
+   "D25": [
+    "digital"
+   ],
+   "D26": [
+    "digital"
+   ],
+   "D27": [
+    "digital"
+   ],
+   "D28": [
+    "digital"
+   ],
+   "D29": [
+    "digital"
+   ],
+   "D30": [
+    "digital"
+   ],
+   "D31": [
+    "digital"
+   ],
+   "D32": [
+    "digital"
+   ],
+   "D33": [
+    "digital"
+   ],
+   "D34": [
+    "digital"
+   ],
+   "D35": [
+    "digital"
+   ],
+   "D36": [
+    "digital"
+   ],
+   "D37": [
+    "digital"
+   ],
+   "D38": [
+    "digital"
+   ],
+   "D39": [
+    "digital"
+   ],
+   "D40": [
+    "digital"
+   ],
+   "D41": [
+    "digital"
+   ],
+   "D42": [
+    "digital"
+   ],
+   "D43": [
+    "digital"
+   ],
+   "D44": [
+    "digital",
+    "pwm"
+   ],
+   "D45": [
+    "digital",
+    "pwm"
+   ],
+   "D46": [
+    "digital",
+    "pwm"
+   ],
+   "D47": [
+    "digital"
+   ],
+   "D48": [
+    "digital"
+   ],
+   "D49": [
+    "digital"
+   ],
+   "D50": [
+    "digital"
+   ],
+   "D51": [
+    "digital"
+   ],
+   "D52": [
+    "digital"
+   ],
+   "D53": [
+    "digital"
+   ],
+   "D14": [
+    "digital"
+   ],
+   "D15": [
+    "digital"
+   ],
+   "D16": [
+    "digital"
+   ],
+   "D17": [
+    "digital"
+   ],
+   "D18": [
+    "digital",
+    "interrupt"
+   ],
+   "D19": [
+    "digital",
+    "interrupt"
+   ],
+   "D20": [
+    "digital",
+    "interrupt",
+    "i2c_sda"
+   ],
+   "D21": [
+    "digital",
+    "interrupt",
+    "i2c_scl"
+   ],
+   "A0": [
+    "digital",
+    "analog"
+   ],
+   "A1": [
+    "digital",
+    "analog"
+   ],
+   "A2": [
+    "digital",
+    "analog"
+   ],
+   "A3": [
+    "digital",
+    "analog"
+   ],
+   "A4": [
+    "digital",
+    "analog"
+   ],
+   "A5": [
+    "digital",
+    "analog"
+   ],
+   "A6": [
+    "digital",
+    "analog"
+   ],
+   "A7": [
+    "digital",
+    "analog"
+   ],
+   "A8": [
+    "digital",
+    "analog"
+   ],
+   "A9": [
+    "digital",
+    "analog"
+   ],
+   "A10": [
+    "digital",
+    "analog"
+   ],
+   "A11": [
+    "digital",
+    "analog"
+   ],
+   "A12": [
+    "digital",
+    "analog"
+   ],
+   "A13": [
+    "digital",
+    "analog"
+   ],
+   "A14": [
+    "digital",
+    "analog"
+   ],
+   "A15": [
+    "digital",
+    "analog"
+   ]
+  },
+  "mcu": "atmega2560",
+  "logic_v": 5.0,
+  "supply_rails": {
+   "5V": 5.0,
+   "3V3": 3.3
+  },
+  "reserved": {
+   "D0": "USB serial RX",
+   "D1": "USB serial TX"
+  },
+  "avoid_for_input": {
+   "D13": "on-board LED loads the pin, so pull-ups read unreliably",
+   "D20": "I2C SDA has an on-board pull-up resistor that cannot be disabled",
+   "D21": "I2C SCL has an on-board pull-up resistor that cannot be disabled"
+  },
+  "conflicts": [
+   {
+    "when_library": "Servo",
+    "disables_pwm": [
+     "D44",
+     "D45",
+     "D46"
+    ],
+    "reason": "Servo library takes Timer5 first on the Mega"
+   },
+   {
+    "when_library": "tone",
+    "disables_pwm": [
+     "D9",
+     "D10"
+    ],
+    "reason": "tone() takes Timer2"
+   }
+  ],
+  "limits": {
+   "gpio_ma_recommended": 20,
+   "gpio_ma_absolute": 40,
+   "mcu_total_ma": 200,
+   "usb_5v_ma": 400,
+   "board_self_ma": 50,
+   "rail_3v3_ma": 50,
+   "usb_peak_ma": 1000
+  },
+  "sram_bytes": 8192,
+  "upload_protocol": "stk500v2",
+  "limits_notes": {
+   "gpio_ma_absolute": "ATmega datasheet absolute maximum, DC current per I/O pin (40 mA)",
+   "gpio_ma_recommended": "ATmega datasheet test condition (20 mA at VCC = 5 V); used as the safe per-pin limit",
+   "mcu_total_ma": "ATmega datasheet absolute maximum per VCC/GND pin (200 mA); applied to the whole chip, which is conservative on the Mega (4 VCC pins)",
+   "usb_5v_ma": "SiliconLoop limit: 400 mA, below the 500 mA USB 2.0 rating, because board fuses, cables and laptop ports often deliver less (one source puts usable USB current on an Uno at ~400 mA)",
+   "board_self_ma": "SiliconLoop estimate: the board's own draw (MCU, USB-serial chip, power LED)",
+   "rail_3v3_ma": "SiliconLoop estimate: on-board 3.3 V regulator capacity",
+   "usb_peak_ma": "SiliconLoop limit for brief worst-case peaks (servo stall/start-up): the board's 500 mA resettable USB fuse trips at roughly 1 A"
+  },
+  "upload_protocol_note": "Current ArduinoCore-avr names the protocol 'wiring' (avrdude's STK500v2 variant).",
+  "sources": [
+   "https://www.arduino.cc/en/uploads/Main/boards.txt",
+   "https://github.com/arduino/ArduinoCore-avr/blob/master/boards.txt",
+   "https://www.arduino.cc/en/Reference/Servo",
+   "https://www.arduino.cc/playground/Code/MegaServo/",
+   "https://docs.arduino.cc/language-reference/en/functions/advanced-io/tone/",
+   "https://www.arduino.cc/playground/Main/ArduinoPinCurrentLimitations/",
+   "ATmega328P / ATmega2560 datasheets, Absolute Maximum Ratings",
+   "https://lastminuteengineers.com/arduino-mega-pinout/ (PWM 2-13 & 44-46, I2C 20/21 with fixed pull-ups)",
+   "Arduino Mega 2560 Rev3 product documentation (interrupts 2, 3, 18, 19, 20, 21; TWI 20 SDA / 21 SCL)"
+  ]
+ }
+}

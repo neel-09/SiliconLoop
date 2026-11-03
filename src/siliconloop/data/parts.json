@@ -1,0 +1,1288 @@
+{
+  "_doc": "Curated part cards. pins: part pin -> {'rail': '5V'|'GND'} or {'role': digital_out|pwm_out|digital_in|analog_in|servo|i2c_sda|i2c_scl, 'optional': bool}. extra.series / extra.pulldown: resistors the allocator adds (series vf may be {option, table, default} to look up by an intent option). A pin may switch role by option with role_if_option. sim: a list of model instances from sim_models.json ({model, pins: {terminal: part pin}, params ('@field' = this card's field), io: {rule key: native key}}), or the name of a template in _generic. Optional extras: safety_notes {always, on_usb}, library_packages {header: Arduino library name}, lint [{forbid|require: regex, message}]. Adding a part that behaves like an existing model type needs only a card here.",
+  "_generic": {
+    "generic_digital_in": {
+      "doc": "Any sensor or module with one digital output (HIGH/LOW). Twin shows a toggle. Fields needed: vcc_range, active_level, rail_ma.",
+      "sim": [
+        {
+          "model": "driven_digital",
+          "pins": {
+            "out": {
+              "role": "digital_in"
+            }
+          },
+          "io": {
+            "active": "active"
+          },
+          "params": {
+            "active_level": "@active_level"
+          }
+        }
+      ]
+    },
+    "generic_analog_in": {
+      "doc": "Any sensor or module with one analog output (0-5 V). Twin shows a slider. Fields needed: vcc_range, rail_ma.",
+      "sim": [
+        {
+          "model": "analog_source",
+          "pins": {
+            "out": {
+              "role": "analog_in"
+            },
+            "digital": {
+              "role": "digital_in"
+            }
+          },
+          "io": {
+            "adc": "value"
+          },
+          "params": {
+            "digital_active_level": "@active_level"
+          }
+        }
+      ]
+    },
+    "generic_digital_out": {
+      "doc": "Any module switched by one digital input pin (relay module, laser module, buzzer module). Twin shows an on/off indicator. Fields needed: vcc_range, active_level, rail_ma, pin_ma.",
+      "sim": [
+        {
+          "model": "load",
+          "pins": {
+            "out": {
+              "role": "digital_out"
+            }
+          },
+          "io": {
+            "active": "state"
+          },
+          "params": {
+            "active_level": "@active_level",
+            "threshold": 0.5
+          }
+        }
+      ]
+    }
+  },
+  "led": {
+    "name": "LED",
+    "aliases": [
+      "led",
+      "light emitting diode",
+      "5mm led",
+      "3mm led"
+    ],
+    "sim": [
+      {
+        "model": "load",
+        "pins": {
+          "out": "anode"
+        },
+        "io": {
+          "on": "state",
+          "brightness": {
+            "key": "level",
+            "requires_option": "dimmable"
+          }
+        }
+      }
+    ],
+    "pins": {
+      "anode": {
+        "role": "digital_out",
+        "label": "long leg (+)",
+        "role_if_option": {
+          "dimmable": "pwm_out"
+        }
+      },
+      "cathode": {
+        "rail": "GND",
+        "label": "short leg (-), flat edge"
+      }
+    },
+    "extra": {
+      "series": [
+        {
+          "on": "anode",
+          "vf": {
+            "option": "color",
+            "table": {
+              "red": 2.0,
+              "yellow": 2.1,
+              "green": 2.2,
+              "blue": 3.0,
+              "white": 3.0
+            },
+            "default": 2.0,
+            "default_option": "red"
+          },
+          "ma": 10
+        }
+      ]
+    },
+    "options": {
+      "color": [
+        "red",
+        "green",
+        "yellow",
+        "blue",
+        "white"
+      ],
+      "dimmable": [
+        false,
+        true
+      ]
+    },
+    "vcc_range": null,
+    "rail_ma": 0,
+    "pin_ma": 0,
+    "libraries": [],
+    "notes": [
+      "The long leg goes towards the Arduino pin, the short leg to GND."
+    ]
+  },
+  "rgb_led": {
+    "name": "RGB LED (common cathode)",
+    "aliases": [
+      "rgb led",
+      "rgb",
+      "common cathode rgb led",
+      "4 pin rgb led"
+    ],
+    "sim": [
+      {
+        "model": "load",
+        "pins": {
+          "out": "r"
+        },
+        "io": {
+          "r": "level"
+        }
+      },
+      {
+        "model": "load",
+        "pins": {
+          "out": "g"
+        },
+        "io": {
+          "g": "level"
+        }
+      },
+      {
+        "model": "load",
+        "pins": {
+          "out": "b"
+        },
+        "io": {
+          "b": "level"
+        }
+      }
+    ],
+    "pins": {
+      "r": {
+        "role": "pwm_out",
+        "label": "red leg"
+      },
+      "cathode": {
+        "rail": "GND",
+        "label": "longest leg (-)"
+      },
+      "g": {
+        "role": "pwm_out",
+        "label": "green leg"
+      },
+      "b": {
+        "role": "pwm_out",
+        "label": "blue leg"
+      }
+    },
+    "extra": {
+      "series": [
+        {
+          "on": "r",
+          "vf": 2.0,
+          "ma": 10
+        },
+        {
+          "on": "g",
+          "vf": 3.0,
+          "ma": 10
+        },
+        {
+          "on": "b",
+          "vf": 3.0,
+          "ma": 10
+        }
+      ]
+    },
+    "vcc_range": null,
+    "rail_ma": 0,
+    "pin_ma": 0,
+    "libraries": [],
+    "notes": [
+      "The longest leg is the common cathode and goes to GND.",
+      "Common-anode RGB LEDs work the other way round; check which one you have."
+    ]
+  },
+  "push_button": {
+    "name": "Push button",
+    "aliases": [
+      "push button",
+      "pushbutton",
+      "tactile switch",
+      "button",
+      "tact switch"
+    ],
+    "sim": [
+      {
+        "model": "contact",
+        "pins": {
+          "contact": "a"
+        },
+        "io": {
+          "pressed": "closed"
+        }
+      }
+    ],
+    "pins": {
+      "a": {
+        "role": "digital_in",
+        "label": "one leg"
+      },
+      "b": {
+        "rail": "GND",
+        "label": "diagonally opposite leg"
+      }
+    },
+    "extra": {},
+    "input_mode": "INPUT_PULLUP",
+    "active_level": "LOW",
+    "pin_ma": 0,
+    "vcc_range": null,
+    "rail_ma": 0,
+    "libraries": [],
+    "notes": [
+      "Uses the Arduino's internal pull-up: the pin reads LOW while the button is pressed.",
+      "Use two diagonally opposite legs so the button actually switches.",
+      "Debounce: accept a new state only after it has been stable for about 25 ms."
+    ]
+  },
+  "potentiometer": {
+    "name": "Potentiometer",
+    "aliases": [
+      "potentiometer",
+      "pot",
+      "trimpot",
+      "variable resistor",
+      "knob"
+    ],
+    "sim": [
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "wiper"
+        },
+        "io": {
+          "adc": "value"
+        }
+      }
+    ],
+    "pins": {
+      "left": {
+        "rail": "5V",
+        "label": "outer leg"
+      },
+      "wiper": {
+        "role": "analog_in",
+        "label": "middle leg"
+      },
+      "right": {
+        "rail": "GND",
+        "label": "other outer leg"
+      }
+    },
+    "extra": {},
+    "pin_ma": 0,
+    "vcc_range": null,
+    "rail_ma": 1,
+    "libraries": [],
+    "notes": [
+      "Swapping the outer legs only reverses the knob direction."
+    ]
+  },
+  "joystick": {
+    "name": "Joystick module (KY-023)",
+    "aliases": [
+      "joystick",
+      "joystick module",
+      "ky-023",
+      "thumb joystick",
+      "analog joystick"
+    ],
+    "sim": [
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "vrx"
+        },
+        "io": {
+          "x": "value"
+        }
+      },
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "vry"
+        },
+        "io": {
+          "y": "value"
+        }
+      },
+      {
+        "model": "contact",
+        "pins": {
+          "contact": "sw"
+        },
+        "io": {
+          "pressed": "closed"
+        }
+      }
+    ],
+    "pins": {
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "vcc": {
+        "rail": "5V",
+        "label": "+5V"
+      },
+      "vrx": {
+        "role": "analog_in",
+        "label": "VRx"
+      },
+      "vry": {
+        "role": "analog_in",
+        "label": "VRy"
+      },
+      "sw": {
+        "role": "digital_in",
+        "label": "SW",
+        "optional": true
+      }
+    },
+    "extra": {},
+    "input_mode_sw": "INPUT_PULLUP",
+    "pin_ma": 0,
+    "vcc_range": [
+      4.5,
+      5.5
+    ],
+    "rail_ma": 1,
+    "libraries": [],
+    "notes": [
+      "Each axis reads about 512 at rest.",
+      "SW reads LOW when the stick is pressed down."
+    ]
+  },
+  "ldr": {
+    "name": "Light-dependent resistor",
+    "aliases": [
+      "ldr",
+      "photoresistor",
+      "photocell",
+      "light sensor",
+      "light dependent resistor"
+    ],
+    "sim": [
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "b"
+        },
+        "io": {
+          "adc": "value"
+        }
+      }
+    ],
+    "pins": {
+      "a": {
+        "rail": "5V",
+        "label": "either leg"
+      },
+      "b": {
+        "role": "analog_in",
+        "label": "other leg"
+      }
+    },
+    "extra": {
+      "pulldown": [
+        {
+          "on": "b",
+          "ohms": 10000
+        }
+      ]
+    },
+    "pin_ma": 0,
+    "vcc_range": null,
+    "rail_ma": 1,
+    "libraries": [],
+    "notes": [
+      "With the 10k resistor to GND, the reading goes up as the light gets brighter."
+    ]
+  },
+  "active_buzzer": {
+    "name": "Active buzzer",
+    "aliases": [
+      "active buzzer",
+      "buzzer",
+      "beeper"
+    ],
+    "sim": [
+      {
+        "model": "load",
+        "pins": {
+          "out": "pos"
+        },
+        "io": {
+          "on": "state"
+        },
+        "params": {
+          "threshold": 0.25
+        }
+      }
+    ],
+    "pins": {
+      "pos": {
+        "role": "digital_out",
+        "label": "long leg (+)"
+      },
+      "neg": {
+        "rail": "GND",
+        "label": "short leg (-)"
+      }
+    },
+    "extra": {
+      "series": [
+        {
+          "on": "pos",
+          "ohms": 100,
+          "ma": 18
+        }
+      ]
+    },
+    "pin_ma": 0,
+    "vcc_range": [
+      3.5,
+      5.5
+    ],
+    "rail_ma": 0,
+    "libraries": [],
+    "notes": [
+      "An active buzzer beeps by itself when its pin is HIGH; it does not need tone()."
+    ]
+  },
+  "sg90_servo": {
+    "name": "SG90 micro servo",
+    "aliases": [
+      "sg90",
+      "servo",
+      "micro servo",
+      "9g servo",
+      "servo motor"
+    ],
+    "sim": [
+      {
+        "model": "servo_pulse",
+        "pins": {
+          "signal": "signal"
+        },
+        "io": {
+          "angle": "angle"
+        }
+      }
+    ],
+    "pins": {
+      "signal": {
+        "role": "servo",
+        "label": "orange wire"
+      },
+      "vcc": {
+        "rail": "5V",
+        "label": "red wire"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "brown wire"
+      }
+    },
+    "extra": {},
+    "pin_ma": 1,
+    "vcc_range": [
+      4.8,
+      6.0
+    ],
+    "rail_ma": 250,
+    "stall_ma": 650,
+    "libraries": [
+      "Servo.h"
+    ],
+    "notes": [
+      "One servo can run from USB power while it moves lightly; two or more need a separate 5 V supply with its GND joined to the Arduino GND.",
+      "Servo s; s.attach(pin) in setup(); s.write(angle 0-180). Report the last commanded angle in telemetry."
+    ],
+    "safety_notes": {
+      "on_usb": [
+        "The servo draws its power through USB. If the Arduino resets when the servo moves, power the servo from a separate 5 V supply and join its GND to the Arduino GND."
+      ]
+    },
+    "library_packages": {
+      "Servo.h": "Servo"
+    }
+  },
+  "hc_sr04": {
+    "name": "HC-SR04 ultrasonic distance sensor",
+    "aliases": [
+      "hc-sr04",
+      "hcsr04",
+      "ultrasonic sensor",
+      "ultrasonic distance sensor",
+      "sonar"
+    ],
+    "sim": [
+      {
+        "model": "ultrasonic",
+        "pins": {
+          "trig": "trig",
+          "echo": "echo"
+        },
+        "io": {
+          "distance_cm": "distance"
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "trig": {
+        "role": "digital_out",
+        "label": "Trig"
+      },
+      "echo": {
+        "role": "digital_in",
+        "label": "Echo"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      }
+    },
+    "extra": {},
+    "pin_ma": 1,
+    "vcc_range": [
+      4.5,
+      5.5
+    ],
+    "rail_ma": 15,
+    "range_cm": [
+      2,
+      400
+    ],
+    "libraries": [],
+    "notes": [
+      "Measures 2 to 400 cm. Read it with pulseIn() on Echo after a 10 microsecond pulse on Trig.",
+      "Trigger at most every 60 ms; pulseIn(echo, HIGH, 25000UL) and distance_cm = duration / 58.0; treat a timeout (0) as out of range (400 cm)."
+    ]
+  },
+  "pir": {
+    "name": "PIR motion sensor (HC-SR501)",
+    "aliases": [
+      "pir",
+      "pir sensor",
+      "hc-sr501",
+      "motion sensor",
+      "pir motion sensor"
+    ],
+    "sim": "generic_digital_in",
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "out": {
+        "role": "digital_in",
+        "label": "OUT"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      }
+    },
+    "extra": {},
+    "active_level": "HIGH",
+    "pin_ma": 0,
+    "vcc_range": [
+      4.5,
+      20.0
+    ],
+    "rail_ma": 1,
+    "libraries": [],
+    "notes": [
+      "Needs about a minute to settle after power-up.",
+      "Output goes HIGH while motion is detected."
+    ]
+  },
+  "ir_obstacle": {
+    "name": "IR obstacle sensor",
+    "aliases": [
+      "ir sensor",
+      "ir obstacle sensor",
+      "obstacle avoidance sensor",
+      "fc-51",
+      "ir proximity sensor"
+    ],
+    "sim": "generic_digital_in",
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "out": {
+        "role": "digital_in",
+        "label": "OUT"
+      }
+    },
+    "extra": {},
+    "active_level": "LOW",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 20,
+    "libraries": [],
+    "notes": [
+      "OUT goes LOW when something is in front of it.",
+      "Turn the blue trimmer to set the detection distance."
+    ]
+  },
+  "tilt_switch": {
+    "name": "Tilt switch",
+    "aliases": [
+      "tilt switch",
+      "tilt sensor",
+      "ball switch",
+      "sw-520d"
+    ],
+    "sim": [
+      {
+        "model": "contact",
+        "pins": {
+          "contact": "a"
+        },
+        "io": {
+          "active": "closed"
+        }
+      }
+    ],
+    "pins": {
+      "a": {
+        "role": "digital_in",
+        "label": "either leg"
+      },
+      "b": {
+        "rail": "GND",
+        "label": "other leg"
+      }
+    },
+    "extra": {},
+    "input_mode": "INPUT_PULLUP",
+    "active_level": "LOW",
+    "pin_ma": 0,
+    "vcc_range": null,
+    "rail_ma": 0,
+    "libraries": [],
+    "notes": [
+      "Uses the internal pull-up: reads LOW when upright (contacts closed)."
+    ]
+  },
+  "touch_sensor": {
+    "name": "Capacitive touch sensor (TTP223)",
+    "aliases": [
+      "touch sensor",
+      "ttp223",
+      "capacitive touch",
+      "touch module"
+    ],
+    "sim": "generic_digital_in",
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "io": {
+        "role": "digital_in",
+        "label": "I/O (SIG)"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      }
+    },
+    "extra": {},
+    "active_level": "HIGH",
+    "pin_ma": 0,
+    "vcc_range": [
+      2.0,
+      5.5
+    ],
+    "rail_ma": 1,
+    "libraries": [],
+    "notes": [
+      "Output goes HIGH while touched."
+    ]
+  },
+  "sound_sensor": {
+    "name": "Sound sensor (KY-038)",
+    "aliases": [
+      "sound sensor",
+      "microphone module",
+      "ky-038",
+      "sound detection module",
+      "clap sensor"
+    ],
+    "sim": [
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "ao",
+          "digital": "do"
+        },
+        "io": {
+          "adc": "value"
+        },
+        "params": {
+          "digital_when": "above",
+          "digital_active_level": "HIGH"
+        }
+      }
+    ],
+    "pins": {
+      "ao": {
+        "role": "analog_in",
+        "label": "A0"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "G"
+      },
+      "vcc": {
+        "rail": "5V",
+        "label": "+"
+      },
+      "do": {
+        "role": "digital_in",
+        "label": "D0",
+        "optional": true
+      }
+    },
+    "extra": {},
+    "active_level": "HIGH",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 5,
+    "libraries": [],
+    "notes": [
+      "The analog reading rises with loudness.",
+      "The digital output trips at the level set by the trimmer."
+    ]
+  },
+  "soil_moisture": {
+    "name": "Soil moisture sensor",
+    "aliases": [
+      "soil moisture sensor",
+      "moisture sensor",
+      "soil sensor",
+      "hygrometer module",
+      "yl-69"
+    ],
+    "sim": [
+      {
+        "model": "analog_source",
+        "pins": {
+          "out": "ao",
+          "digital": "do"
+        },
+        "io": {
+          "adc": "value"
+        },
+        "params": {
+          "digital_when": "below",
+          "digital_active_level": "LOW"
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "ao": {
+        "role": "analog_in",
+        "label": "AO"
+      },
+      "do": {
+        "role": "digital_in",
+        "label": "DO",
+        "optional": true
+      }
+    },
+    "extra": {},
+    "active_level": "LOW",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 15,
+    "libraries": [],
+    "notes": [
+      "The reading goes DOWN as the soil gets wetter.",
+      "Powering the probe only while reading makes it last longer."
+    ]
+  },
+  "flame_sensor": {
+    "name": "Flame sensor",
+    "aliases": [
+      "flame sensor",
+      "fire sensor",
+      "ir flame sensor",
+      "ky-026"
+    ],
+    "sim": [
+      {
+        "model": "driven_digital",
+        "pins": {
+          "out": "do",
+          "analog": "ao"
+        },
+        "io": {
+          "active": "active"
+        },
+        "params": {
+          "active_level": "@active_level"
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "do": {
+        "role": "digital_in",
+        "label": "DO"
+      },
+      "ao": {
+        "role": "analog_in",
+        "label": "AO",
+        "optional": true
+      }
+    },
+    "extra": {},
+    "active_level": "LOW",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 15,
+    "libraries": [],
+    "notes": [
+      "Detects infrared light from a flame; strong sunlight also triggers it."
+    ]
+  },
+  "relay_module": {
+    "name": "Relay module (1-channel, 5 V)",
+    "aliases": [
+      "relay",
+      "relay module",
+      "5v relay",
+      "1 channel relay",
+      "srd-05vdc"
+    ],
+    "sim": "generic_digital_out",
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "in": {
+        "role": "digital_out",
+        "label": "IN"
+      }
+    },
+    "extra": {},
+    "active_level": "LOW",
+    "pin_ma": 5,
+    "vcc_range": [
+      4.5,
+      5.5
+    ],
+    "rail_ma": 75,
+    "libraries": [],
+    "notes": [
+      "Most modules switch ON when IN is LOW.",
+      "Only switch low-voltage DC loads (up to 12 V). Never connect mains to the relay contacts."
+    ],
+    "safety_notes": {
+      "always": [
+        "Use the relay only for low-voltage DC loads (up to 12 V). Never connect mains to its contacts."
+      ]
+    }
+  },
+  "dht11": {
+    "name": "DHT11 temperature and humidity sensor (3-pin module)",
+    "aliases": [
+      "dht11",
+      "dht 11",
+      "temperature humidity sensor",
+      "humidity sensor",
+      "temperature sensor"
+    ],
+    "sim": [
+      {
+        "model": "dht",
+        "pins": {
+          "data": "data"
+        },
+        "io": {
+          "temperature_c": "temperature",
+          "humidity_pct": "humidity"
+        },
+        "params": {
+          "encoding": "int",
+          "start_low_us": 15000,
+          "temp_range": [
+            0,
+            50
+          ],
+          "humidity_range": [
+            20,
+            90
+          ]
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "+ / VCC"
+      },
+      "data": {
+        "role": "digital_in",
+        "label": "OUT / DATA"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "- / GND"
+      }
+    },
+    "extra": {},
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 3,
+    "libraries": [
+      "DHT.h"
+    ],
+    "notes": [
+      "Read it at most once every 2 seconds.",
+      "The 3-pin module already has its pull-up resistor.",
+      "DHT dht(pin, DHT11); dht.begin(); readTemperature()/readHumidity() can return NaN - keep the last good value."
+    ],
+    "library_packages": {
+      "DHT.h": "DHT sensor library"
+    }
+  },
+  "dht22": {
+    "name": "DHT22 temperature and humidity sensor (3-pin module)",
+    "aliases": [
+      "dht22",
+      "am2302",
+      "dht 22"
+    ],
+    "sim": [
+      {
+        "model": "dht",
+        "pins": {
+          "data": "data"
+        },
+        "io": {
+          "temperature_c": "temperature",
+          "humidity_pct": "humidity"
+        },
+        "params": {
+          "encoding": "tenths",
+          "start_low_us": 800
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "+ / VCC"
+      },
+      "data": {
+        "role": "digital_in",
+        "label": "OUT / DATA"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "- / GND"
+      }
+    },
+    "extra": {},
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      6.0
+    ],
+    "rail_ma": 2,
+    "libraries": [
+      "DHT.h"
+    ],
+    "notes": [
+      "Read it at most once every 2 seconds.",
+      "DHT dht(pin, DHT22); dht.begin(); readTemperature()/readHumidity() can return NaN - keep the last good value."
+    ],
+    "library_packages": {
+      "DHT.h": "DHT sensor library"
+    }
+  },
+  "mpu6050": {
+    "name": "MPU6050 accelerometer + gyroscope (GY-521)",
+    "aliases": [
+      "mpu6050",
+      "mpu-6050",
+      "gy-521",
+      "accelerometer",
+      "gyroscope",
+      "imu"
+    ],
+    "sim": [
+      {
+        "model": "imu_mpu6050",
+        "pins": {},
+        "io": {
+          "pitch_deg": "pitch",
+          "roll_deg": "roll"
+        },
+        "params": {
+          "address": "@i2c_address"
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "scl": {
+        "role": "i2c_scl",
+        "label": "SCL"
+      },
+      "sda": {
+        "role": "i2c_sda",
+        "label": "SDA"
+      },
+      "int": {
+        "role": "digital_in",
+        "label": "INT",
+        "optional": true
+      }
+    },
+    "extra": {},
+    "i2c_address": "0x68",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 4,
+    "libraries": [
+      "Wire.h",
+      "MPU6050_light.h"
+    ],
+    "notes": [
+      "Leave AD0 unconnected for address 0x68.",
+      "Keep it still for a second after power-up while it calibrates.",
+      "With MPU6050_light: call mpu.begin() and mpu.calcOffsets() in setup() and mpu.update() every loop(); roll_deg = mpu.getAngleX() (rotation about X), pitch_deg = mpu.getAngleY() (rotation about Y)."
+    ],
+    "library_packages": {
+      "MPU6050_light.h": "MPU6050_light"
+    }
+  },
+  "ssd1306": {
+    "name": "SSD1306 OLED 128x64 (I2C)",
+    "aliases": [
+      "ssd1306",
+      "oled",
+      "oled display",
+      "0.96 oled",
+      "i2c oled",
+      "128x64 oled"
+    ],
+    "sim": [
+      {
+        "model": "ssd1306",
+        "pins": {},
+        "io": {
+          "text_contains": "text"
+        },
+        "params": {
+          "address": "@i2c_address"
+        }
+      }
+    ],
+    "pins": {
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "scl": {
+        "role": "i2c_scl",
+        "label": "SCL"
+      },
+      "sda": {
+        "role": "i2c_sda",
+        "label": "SDA"
+      }
+    },
+    "extra": {},
+    "i2c_address": "0x3C",
+    "pin_ma": 0,
+    "vcc_range": [
+      3.3,
+      5.5
+    ],
+    "rail_ma": 20,
+    "libraries": [
+      "Wire.h",
+      "SSD1306Ascii.h",
+      "SSD1306AsciiWire.h"
+    ],
+    "notes": [
+      "Text-only library keeps RAM free on the Uno and Nano.",
+      "Most modules use address 0x3C; some use 0x3D.",
+      "SSD1306AsciiWire oled; oled.begin(&Adafruit128x64, 0x3C); oled.setFont(System5x7); redraw a line only when its text changes."
+    ],
+    "library_packages": {
+      "SSD1306Ascii.h": "SSD1306Ascii",
+      "SSD1306AsciiWire.h": "SSD1306Ascii"
+    },
+    "lint": [
+      {
+        "require": "\\bsetFont\\s*\\(",
+        "message": "Call oled.setFont(System5x7) in setup(); without a font SSD1306Ascii prints nothing."
+      },
+      {
+        "forbid": "\\bsetFont\\s*\\(\\s*(?!(System5x7|Adafruit5x7|font5x7|lcd5x7|Stang5x7)\\s*\\))",
+        "message": "Use a 5x7 font (oled.setFont(System5x7)); larger fonts do not fit the layout the test reads. Use set2X() for big text."
+      }
+    ]
+  },
+  "lcd1602_i2c": {
+    "name": "16x2 LCD with I2C backpack",
+    "aliases": [
+      "lcd",
+      "16x2 lcd",
+      "lcd1602",
+      "i2c lcd",
+      "lcd display",
+      "1602 lcd"
+    ],
+    "sim": [
+      {
+        "model": "hd44780_i2c",
+        "pins": {},
+        "io": {
+          "text_contains": "text"
+        },
+        "params": {
+          "address": "@i2c_address",
+          "cols": 16,
+          "rows": 2
+        }
+      }
+    ],
+    "pins": {
+      "gnd": {
+        "rail": "GND",
+        "label": "GND"
+      },
+      "vcc": {
+        "rail": "5V",
+        "label": "VCC"
+      },
+      "sda": {
+        "role": "i2c_sda",
+        "label": "SDA"
+      },
+      "scl": {
+        "role": "i2c_scl",
+        "label": "SCL"
+      }
+    },
+    "extra": {},
+    "i2c_address": "0x27",
+    "pin_ma": 0,
+    "vcc_range": [
+      4.5,
+      5.5
+    ],
+    "rail_ma": 30,
+    "libraries": [
+      "Wire.h",
+      "LiquidCrystal_I2C.h"
+    ],
+    "notes": [
+      "Turn the blue contrast screw on the back if the screen looks blank.",
+      "Most backpacks use address 0x27; some use 0x3F.",
+      "LiquidCrystal_I2C lcd(0x27, 16, 2); lcd.init(); lcd.backlight(); redraw a line only when its text changes."
+    ],
+    "library_packages": {
+      "LiquidCrystal_I2C.h": "LiquidCrystal I2C"
+    }
+  }
+}

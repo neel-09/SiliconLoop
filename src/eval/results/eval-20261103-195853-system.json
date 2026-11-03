@@ -1,0 +1,35 @@
+{
+ "mode": "system",
+ "started": "2026-11-03 19:58",
+ "results": [
+  {
+   "id": "pw-relay-lcd",
+   "tier": "power",
+   "board": "uno",
+   "wish": "Show the distance on the LCD, switch the relay on closer than 25 cm and move the servo to 90 degrees closer than 10 cm.",
+   "build": "52091ee6dc3a",
+   "status": "verified",
+   "title": "Proximity Alert Display",
+   "rules": 6,
+   "compiled_first": true,
+   "compiled_final": true,
+   "verified_first": true,
+   "verified": true,
+   "rules_failed_first": 0,
+   "repairs": 0,
+   "failed_stage": null,
+   "power": "usb+external",
+   "supplies": [
+    "5 V for servo1"
+   ],
+   "parts_ma": 120,
+   "sim_passed": 6,
+   "sim_total": 6,
+   "usd": 0.0529,
+   "calls": 4,
+   "seconds": 37.5,
+   "error": null,
+   "pass": true
+  }
+ ]
+}

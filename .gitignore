@@ -1,0 +1,9 @@
+.venv/
+.env
+__pycache__/
+*.pyc
+node_modules/
+src/web/dist/
+.cache/
+build/
+costs.jsonl
