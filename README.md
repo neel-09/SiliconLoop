@@ -2,6 +2,12 @@
 
 **Imagination to silicon, proven in simulation.**
 
+**Try it live:** https://siliconloop-161403134431.us-central1.run.app ·
+**Demo video (3 min):** https://youtu.be/ltlNKccoAkQ
+
+One-click flashing from the live site has been tested on a real Arduino Uno: the board runs the same verified
+firmware as the twin.
+
 **Powered by Muse Spark Open, Meta's open-weight model, served on [Baseten](https://www.baseten.co/).** Every AI step
 in SiliconLoop runs on this one open-weight model; no closed model is used anywhere.
 
