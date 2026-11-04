@@ -61,7 +61,7 @@ the same model, Muse Spark Open on Baseten; the difference is the system around 
 
 - 6 / 6 single-part, 8 / 8 sensor-to-output and 6 / 6 three-or-more-part gadgets verified; 3.6 behaviour rules per
   gadget on average; one repair round in the whole set.
-- About 0.08 US dollars and 24 seconds per verified build.
+- About 4-6 US cents and 30-45 seconds per verified build (up to a minute for the first build while the server wakes up).
 - The baseline ("Muse Spark Open alone") got the same wishes, wiring, rules and test, but only the wish, the pin
   connections and the serial format, and wrote the sketch in one shot: no part cards, datasheet facts, example, code
   rules or repair loop. Every baseline sketch that compiled passed the health checks (baud, telemetry, no resets), so
